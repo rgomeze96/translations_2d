@@ -11,9 +11,9 @@ public class Point3 {
     public double z;
     
     public Point3(double x, double y, double z) {
-        x = this.x;
-        y = this.y;
-        z = this.z;
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
     public double getX() {
         return x;

@@ -1,15 +1,14 @@
 package Geometry2D;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
-import java.util.ArrayDeque;
 import java.util.LinkedList;
-import java.util.Queue;
 
 import javax.swing.JPanel;
 import javax.swing.JFrame;
+import Math.Matrix3x3;
+import Math.Point3;
 /**
  *
  * @author htrefftz
@@ -23,13 +22,6 @@ public class Transformations2D
     {
         linesToDraw = new LinkedList<>();
     }
-
-    Point point0;
-    Point point1;
-    Point point2;
-    Point point3;
-    Point point4;
-
     Line line0;
     Line line1;
     Line line2;
@@ -41,18 +33,27 @@ public class Transformations2D
     int width = 800;
     protected Boolean hasDrawnOnce;
 
+    Point3[] housePoints = {
+            new Point3(100, 100,1),
+            new Point3(200, 100,1),
+            new Point3(200,200,1),
+            new Point3(150,250,1),
+            new Point3(100,200,1),
+    };
+
+    double step = 20;
+    double rotAngle = Math.PI/12;
+    double upScaleFactor = 1.2;
+    double downScaleFactor = 0.8;
+
     public Transformations2D() {
-        point0 = new Point(100, 100);
-        point1 = new Point(200, 100);
-        point2 = new Point(200,200);
-        point3 = new Point(150,250);
-        point4 = new Point(100,200);
-        line0 = new Line(point0.x,point0.y,point1.x,point1.y);
-        line1 = new Line(point1.x,point1.y,point2.x,point2.y);
-        line2 = new Line(point2.x,point2.y,point3.x,point3.y);
-        line3 = new Line(point3.x,point3.y,point4.x,point4.y);
-        line4 = new Line(point4.x,point4.y,point0.x,point0.y);
-        line5 = new Line(point2.x,point2.y,point4.x,point4.y);
+
+        line0 = new Line(housePoints[0].x, housePoints[0].y, housePoints[1].x, housePoints[1].y);
+        line1 = new Line(housePoints[1].x, housePoints[1].y, housePoints[2].x, housePoints[2].y);
+        line2 = new Line(housePoints[2].x, housePoints[2].y, housePoints[3].x, housePoints[3].y);
+        line3 = new Line(housePoints[3].x, housePoints[3].y, housePoints[4].x, housePoints[4].y);
+        line4 = new Line(housePoints[4].x, housePoints[4].y, housePoints[0].x, housePoints[0].y);
+        line5 = new Line(housePoints[2].x, housePoints[2].y, housePoints[4].x, housePoints[4].y);
         hasDrawnOnce = false;
         linesToDraw.add(0,line0);
         linesToDraw.add(1,line1);
@@ -67,29 +68,45 @@ public class Transformations2D
         super.paintComponent(g);
         height = this.getHeight();
         width = this.getWidth();
-
+        Graphics2D g2d = (Graphics2D) g;
         g.setColor(Color.BLACK);
         for (Line lineToDraw : linesToDraw) {
-            System.out.println(lineToDraw.x1 + "" + lineToDraw.y1 + "" + lineToDraw.x2 + "" + lineToDraw.y2);
-            g.drawLine(convertXToCartesian(lineToDraw.x1), convertYToCartesian(lineToDraw.y1), convertXToCartesian(lineToDraw.x2), convertYToCartesian(lineToDraw.y2));
+            Line2D.Double lineBuilder = new Line2D.Double(convertXToCartesian(lineToDraw.x1),
+                    convertYToCartesian(lineToDraw.y1),convertXToCartesian(lineToDraw.x2),
+                    convertYToCartesian(lineToDraw.y2));
+            g2d.draw(lineBuilder);
         }
         myDrawAxes(g, -100, -100, 100, 100);
 
     }
 
-    public int convertXToCartesian(int x1){
-        return x1 + width / 2;
+    public double convertXToCartesian(double x1){
+        return x1 + width / 2.0;
     }
-    public int convertYToCartesian(int y1){
-        return height / 2 - y1;
-    }
-
-    public int convertXToJava(int x1){
-        return x1 - width / 2;
+    public double convertYToCartesian(double y1){
+        return height / 2.0 - y1;
     }
 
-    public int convertYToJava(int y1){
-        return height / 2 - y1;
+    public double convertXToJava(double x1){
+        return x1 - width / 2.0;
+    }
+
+    public double convertYToJava(double y1){
+        return height / 2.0 - y1;
+    }
+
+    public void translate(double xStep, double yStep){
+        Matrix3x3 translateMatrix = new Matrix3x3();
+        translateMatrix.matrix[0][2] = xStep;
+        translateMatrix.matrix[1][2] = yStep;
+        System.out.println("translateMatrix");
+        System.out.println(translateMatrix);
+        for(int i = 0; i < this.housePoints.length; i++){
+            Point3 newPoint = Matrix3x3.times(translateMatrix, this.housePoints[i]);
+            System.out.println("newPoint" + newPoint.y);
+            this.housePoints[i] = newPoint;
+
+        }
     }
 
     @Override
@@ -102,16 +119,18 @@ public class Transformations2D
 
     @Override
     public void keyReleased(KeyEvent e) {
-        repaint();
         System.out.println("Key Released:" + e.getKeyCode());
-        line0.x2 = 500;
+        int keyPressed = e.getKeyCode();
+        if (keyPressed == 87) {
+            this.translate(0, this.step);
+        }
+        repaint();
     }
     private void myDrawAxes(Graphics g, int x1, int y1, int x2, int y2) {
         int x1p = x1 + width / 2;
         int x2p = x2 + width / 2;
         int y1p = height / 2 - y1;
         int y2p = height / 2 - y2;
-        //System.out.println("Ejes " + x1p + " " + y1p + " " + x2p + " " + y2p);
         g.setColor(Color.BLACK);
         g.drawLine(x1p, height/2, x2p, height/2);
         g.drawLine(width/2, y1p, width/2, y2p);
@@ -123,7 +142,7 @@ public class Transformations2D
         Transformations2D t2d = new Transformations2D();
         frame.add(t2d);
         frame.addKeyListener(t2d);
-        t2d.setBackground(Color.WHITE);
+        t2d.setBackground(Color.GRAY);
         frame.setSize(800, 800);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

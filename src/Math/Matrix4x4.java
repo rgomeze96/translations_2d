@@ -29,22 +29,22 @@ public class Matrix4x4 {
         return matrix[row][column];
     }
 
-    public static double [] times(double [][] matrix, double [] vector) {
-        double [] newVector = new double[4];
+    public static Vector4 times(Matrix4x4 matrix, Vector4 vector) {
+        double [] resultVector = new double[4];
         for(int i = 0; i < 4; i++) {
             double sumResult = 0;
             for(int j = 0; j < 4; j++) {
-                sumResult += matrix[i][j] * vector[j];
+                sumResult += matrix.get(i,j) * vector.get(j);
             }
-            newVector[i] = sumResult;
+            resultVector[i] = sumResult;
         }
-        double w = newVector[3];
+        double w = resultVector[3];
         if(w != 1) {
             for(int i = 0; i < 4; i++) {
-                newVector[i] = newVector[i]/w;
+                resultVector[i] = resultVector[i]/w;
             }
         }
-        return newVector;
+        return new Vector4(resultVector);
     }
 
     public static double [][] times(double [][] m1, double [][] m2) {
@@ -62,9 +62,9 @@ public class Matrix4x4 {
     }
 
     public static void main(String [] args) {
-        double [][] m1 = new double [4][4];
-        double [] v1 = new double [4];
-        double [] v2 = times(m1, v1);
-        System.out.println(Arrays.toString(v2));
+        Matrix4x4 m1 = new Matrix4x4();
+        Vector4 v1 = new Vector4();
+        Vector4 v2 = Matrix4x4.times(m1, v1);
+        System.out.println(v2);
     }
 }
